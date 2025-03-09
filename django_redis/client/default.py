@@ -1101,8 +1101,9 @@ class DefaultClient:
     def hset(
         self,
         name: KeyT,
-        key: str,
-        value: EncodableT,
+        key: Optional[str] = None,
+        value: Optional[EncodableT] = None,
+        mapping: Optional[Dict[str, EncodableT]] = None,
         version: Optional[int] = None,
         client: Optional[Redis] = None,
     ) -> int:
@@ -1112,11 +1113,135 @@ class DefaultClient:
         """
         if client is None:
             client = self.get_client(write=True)
-
+        if mapping is not None:
+            mapping = {k: self.encode(v) for k, v in mapping.items()}
+        
         name = self.make_key(name, version=version)
         nvalue = self.encode(value)
-        return int(client.hset(name, key, nvalue))
+        return int(client.hset(name, key, nvalue, mapping))
+    
+    def hget(
+        self,
+        name: KeyT,
+        key: Optional[str] = None,
+        version: Optional[int] = None,
+        client: Optional[Redis] = None,
+    ) -> int:
+        """
+        """     
+        if client is None:
+            client = self.get_client(write=True)
 
+        name = self.make_key(name, version=version)  
+        result = client.hget(name, key)
+        return self._decode_iterable_result(result)
+
+    def hgetall(
+        self,
+        key: KeyT,
+        version: Optional[int] = None,
+        client: Optional[Redis] = None,
+    ) -> dict:
+        if client is None:
+            client = self.get_client(write=False)
+        key = self.make_key(key, version=version)
+        try:
+            raw = client.hgetall(key)
+        except _main_exceptions as e:
+            raise ConnectionInterrupted(connection=client) from e
+        return {k.decode() if isinstance(k, bytes) else k: self.decode(v) for k, v in raw.items()}
+
+
+    def hmget(
+        self,
+        key: KeyT,
+        fields: List[str],
+        version: Optional[int] = None,
+        client: Optional[Redis] = None,
+    ) -> List[Any]:
+        """ 
+        """
+        if client is None:
+            client = self.get_client(write=False)
+        key = self.make_key(key, version=version)
+        try:
+            results = client.hmget(key, fields)
+        except _main_exceptions as e:
+            raise ConnectionInterrupted(connection=client) from e
+
+        return self._decode_iterable_result(results, covert_to_set=False)
+
+
+
+    def hincrby(
+        self,
+        key: KeyT,
+        field: str,
+        amount: int = 1,
+        version: Optional[int] = None,
+        client: Optional[Redis] = None,
+    ) -> int:
+        if client is None:
+            client = self.get_client(write=True)
+        key = self.make_key(key, version=version)
+        try:
+            return client.hincrby(key, field, amount)
+        except _main_exceptions as e:
+            raise ConnectionInterrupted(connection=client) from e
+
+
+    def hincrbyfloat(
+        self,
+        key: KeyT,
+        field: str,
+        amount: float = 1.0,
+        version: Optional[int] = None,
+        client: Optional[Redis] = None,
+    ) -> float:
+        if client is None:
+            client = self.get_client(write=True)
+        key = self.make_key(key, version=version)
+        try:
+            return client.hincrbyfloat(key, field, amount)
+        except _main_exceptions as e:
+            raise ConnectionInterrupted(connection=client) from e
+
+
+    def hscan(
+        self,
+        key: KeyT,
+        cursor: int = 0,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
+        version: Optional[int] = None,
+        client: Optional[Redis] = None,
+    ) -> Tuple[int, dict]:
+        if client is None:
+            client = self.get_client(write=False)
+        key = self.make_key(key, version=version)
+        try:
+            return client.hscan(key, cursor=cursor, match=match, count=count)
+        except _main_exceptions as e:
+            raise ConnectionInterrupted(connection=client) from e
+
+
+    def hsetnx(
+        self,
+        key: KeyT,
+        field: str,
+        value: EncodableT,
+        version: Optional[int] = None,
+        client: Optional[Redis] = None,
+    ) -> bool:
+        if client is None:
+            client = self.get_client(write=True)
+        key = self.make_key(key, version=version)
+        try:
+            return bool(client.hsetnx(key, field, self.encode(value)))
+        except _main_exceptions as e:
+            raise ConnectionInterrupted(connection=client) from e
+
+    # ---------------------------------
     def hdel(
         self,
         name: KeyT,

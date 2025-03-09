@@ -252,10 +252,45 @@ class RedisCache(BaseCache):
     @omit_exception
     def sunionstore(self, *args, **kwargs):
         return self.client.sunionstore(*args, **kwargs)
+ 
+    @omit_exception
+    def hgetall(self, *args, **kwargs):
+        return self.client.hgetall(*args, **kwargs)
 
+    @omit_exception
+    def hincrby(self, *args, **kwargs):
+        return self.client.hincrby(*args, **kwargs)
+
+    @omit_exception
+    def hincrbyfloat(self, *args, **kwargs):
+        return self.client.hincrbyfloat(*args, **kwargs)
+
+    @omit_exception
+    def hmget(self, *args, **kwargs):
+        return self.client.hmget(*args, **kwargs)
+
+    @omit_exception
+    def hmset(self, *args, **kwargs):
+        return self.client.hset(*args, **kwargs)  # 최신 redis-py에서는 hset(mapping=...) 사용
+
+    @omit_exception
+    def hscan(self, *args, **kwargs):
+        return self.client.hscan(*args, **kwargs)
+
+    @omit_exception
+    def hsetnx(self, *args, **kwargs):
+        return self.client.hsetnx(*args, **kwargs)
     @omit_exception
     def hset(self, *args, **kwargs):
         return self.client.hset(*args, **kwargs)
+
+    @omit_exception
+    def hget(self, *args, **kwargs):
+        return self.client.hget(*args, **kwargs)
+
+    @omit_exception
+    def hmget(self, *args, **kwargs):
+        return self.client.hmget(*args, **kwargs)
 
     @omit_exception
     def hdel(self, *args, **kwargs):
