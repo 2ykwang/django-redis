@@ -520,8 +520,9 @@ class DefaultClient:
             return None
         if isinstance(result, list):
             if covert_to_set:
-                return {self.decode(value) for value in result}
-            return [self.decode(value) for value in result]
+                return {self._decode_iterable_result(value) for value in result}
+            return [self._decode_iterable_result(value) for value in result]
+
         return self.decode(result)
 
     def get_many(
