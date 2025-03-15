@@ -81,11 +81,11 @@ class RedisCache(BaseCache):
         return self.client.set(*args, **kwargs)
 
     @omit_exception
-    def incr_version(self, *args, **kwargs):
+    def incr_version(self, *args, **kwargs): # rw
         return self.client.incr_version(*args, **kwargs)
 
     @omit_exception
-    def add(self, *args, **kwargs):
+    def add(self, *args, **kwargs):  # set nx
         return self.client.add(*args, **kwargs)
 
     def get(self, key, default=None, version=None, client=None):
@@ -99,7 +99,7 @@ class RedisCache(BaseCache):
         return self.client.get(key, default=default, version=version, client=client)
 
     @omit_exception
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs): # d
         """returns a boolean instead of int since django version 3.1"""
         result = self.client.delete(*args, **kwargs)
         return bool(result) if DJANGO_VERSION >= (3, 1, 0) else result
@@ -122,23 +122,23 @@ class RedisCache(BaseCache):
         return self.client.get_many(*args, **kwargs)
 
     @omit_exception
-    def set_many(self, *args, **kwargs):
+    def set_many(self, *args, **kwargs): # w
         return self.client.set_many(*args, **kwargs)
 
     @omit_exception
-    def incr(self, *args, **kwargs):
+    def incr(self, *args, **kwargs): # rw
         return self.client.incr(*args, **kwargs)
 
     @omit_exception
-    def decr(self, *args, **kwargs):
+    def decr(self, *args, **kwargs): # rw
         return self.client.decr(*args, **kwargs)
 
     @omit_exception
-    def has_key(self, *args, **kwargs):
+    def has_key(self, *args, **kwargs): # r
         return self.client.has_key(*args, **kwargs)
 
     @omit_exception
-    def keys(self, *args, **kwargs):
+    def keys(self, *args, **kwargs): # r
         return self.client.keys(*args, **kwargs)
 
     @omit_exception

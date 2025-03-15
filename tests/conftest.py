@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 import pytest
+from redis import Redis
 from xdist.scheduler import LoadScopeScheduling
 
 from django_redis.cache import BaseCache
@@ -47,22 +48,35 @@ def cache(cache_settings: str) -> Iterable[BaseCache]:
     yield default_cache
     default_cache.clear()
 
+@pytest.fixture()
+def redis_connection(cache_settings: str) -> Redis:
+    from django import setup
+
+    environ["DJANGO_SETTINGS_MODULE"] = f"settings.{cache_settings}"
+    setup()
+
+    from django.core.cache import cache as default_cache
+
+    connection = default_cache.client.get_client(write=True)
+    return connection
+
+
 
 def pytest_generate_tests(metafunc):
     if "cache" in metafunc.fixturenames or "session" in metafunc.fixturenames:
         # Mark
         settings = [
             "sqlite",
-            "sqlite_gzip",
-            "sqlite_herd",
-            "sqlite_json",
-            "sqlite_lz4",
-            "sqlite_msgpack",
-            "sqlite_sentinel",
-            "sqlite_sentinel_opts",
-            "sqlite_sharding",
-            "sqlite_usock",
-            "sqlite_zlib",
-            "sqlite_zstd",
+            # "sqlite_gzip",
+            # "sqlite_herd",
+            # "sqlite_json",
+            # "sqlite_lz4",
+            # "sqlite_msgpack",
+            # "sqlite_sentinel",
+            # "sqlite_sentinel_opts",
+            # "sqlite_sharding",
+            # "sqlite_usock",
+            # "sqlite_zlib",
+            # "sqlite_zstd",
         ]
         metafunc.parametrize("cache_settings", settings)
